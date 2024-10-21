@@ -1,224 +1,157 @@
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'screens/todo_list_screen.dart';
+import 'screens/category_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// Todo class
+class Todo {
+  String title;
+  DateTime dueDate;
+  bool isCompleted;
+  Category category;
 
+  Todo({
+    required this.title,
+    required this.dueDate,
+    this.isCompleted = false,
+    required this.category,
+  });
+}
+
+// Category model
+class Category {
+  String name;
+  Color color;
+
+  Category({required this.name, required this.color});
+}
+
+// CategoryProvider for managing categories
+class CategoryProvider with ChangeNotifier {
+  List<Category> _categories = [
+    Category(name: 'Work', color: Colors.blue),
+    Category(name: 'Personal', color: Colors.green),
+  ];
+
+  List<Category> get categories => _categories;
+
+  void addCategory(Category category) {
+    _categories.add(category);
+    notifyListeners();
+  }
+
+  void editCategory(int index, Category newCategory) {
+    _categories[index] = newCategory;
+    notifyListeners();
+  }
+
+  void removeCategory(int index) {
+    _categories.removeAt(index);
+    notifyListeners();
+  }
+}
+
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
+      create: (context) => CategoryProvider(),
       child: MaterialApp(
-        title: 'Namer App',
+        title: 'Todo List App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.green, // Base color of the app
+            primary: Colors.white,
+            brightness: Brightness.dark,
+            //surface: Colors.grey[850] // Ensures a dark theme
+            //secondary: Colors.grey.shade800,
+            surface: Colors.grey[850],
+            onSurface: Colors.white,
+            secondary: Colors.green.shade900,
+
+            // secondaryContainer: Colors.white
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            
+            filled: true, // Enables filling the background of the text field
+            fillColor: Colors.grey.shade700, // Background color of text field
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4.0),
+              borderSide: BorderSide(
+                color: Colors.grey.shade500, // Border color
+              ),
+            ),
+            labelStyle: TextStyle(
+              color: Colors.white,
+               
+            ),
+            hintStyle: TextStyle(
+              color: Colors.white, 
+            ),
+          ),
+          
+           iconTheme: IconThemeData(
+            color: Colors.white, // Set your desired icon color here
+            size: 24, // You can also set the default size
+          ),
+          // Optionally, you can set specific icon colors for light and dark themes
+          primaryIconTheme: IconThemeData(
+            color: Colors.white, // Change this to your preferred color
+          ),
         ),
-        home: MyHomePage(),
+        home: HomeScreen(),
       ),
     );
   }
 }
 
-class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
-  var favorites = <WordPair>[];
-  void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
-  }
+// Home Screen with Bottom Navigation Bar
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class MyHomePage extends StatefulWidget {
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
 
-class _MyHomePageState extends State<MyHomePage> {
-  var selectedIndex = 0;
+  final List<Widget> _screens = [
+    TodoListScreen(),
+    CategoryScreen(),
+  ];
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final appStyle = theme.textTheme.displayLarge!
-        .copyWith(color: theme.colorScheme.onSecondary, fontSize: 40);
-    Widget page;
-    switch (selectedIndex) {
-      case 0:
-        page = GeneratorPage();
-      case 1:
-        page = FavoritesPage();
-      default:
-        throw UnimplementedError('no widget for $selectedIndex');
-    }
-
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Center(
-              child: Text(
-            "Awesome app",
-            style: appStyle,
-          )),
-          elevation: 10,
-          backgroundColor: theme.colorScheme.secondary,
-        ),
-        body: Row(
-          children: [
-            SafeArea(
-              child: NavigationRail(
-                backgroundColor: Colors.white,
-                extended: constraints.maxWidth >= 600,
-                destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Favorites'),
-                  ),
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: page,
-              ),
-            ),
-          ],
-        ),
-      );
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
     });
   }
-}
-
-class GeneratorPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
-
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            BigCard(pair: pair),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    appState.toggleFavorite();
-                  },
-                  icon: Icon(icon),
-                  label: Text("Like"),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    appState.getNext();
-                  },
-                  child: Text('Next'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
-
-  final WordPair pair;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = theme.textTheme.displayMedium!
-        .copyWith(color: theme.colorScheme.onPrimary, fontSize: 40);
-    return Card(
-      elevation: 20,
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          pair.asLowerCase,
-          style: style,
-          semanticsLabel: "${pair.first} ${pair.second}",
-        ),
-      ),
-    );
-  }
-}
-
-class FavoritesPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-
-
-    if (appState.favorites.isEmpty) {
-      return Center(
-        child: Text("No favorites yet."),
-      );
-    }
-
-
-
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text('You have ' '${appState.favorites.length} favorites: '),
-        ),
-        for (var favorite in appState.favorites)
-          ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text(favorite.first),
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: theme.colorScheme.secondary,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.white,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Todos',
           ),
-      ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Categories',
+          ),
+        ],
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
