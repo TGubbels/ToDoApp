@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:namer_app/screens/category_screen.dart';
+import 'package:provider/provider.dart';
 import 'add_todo_screen.dart';
-import '../main.dart'; // Importing the Todo class and CategoryProvider
+import '../main.dart'; // Importing the Todo class and TodoProvider
 import 'todo_item_widget.dart';
 import 'todo_app_bar.dart';
 import 'todo_list_view.dart';
+ // Ensure to import the TodoProvider
 
 class TodoListScreen extends StatefulWidget {
   @override
@@ -13,16 +14,15 @@ class TodoListScreen extends StatefulWidget {
 }
 
 class _TodoListScreenState extends State<TodoListScreen> {
-  final List<Todo> _todos = [];
   Todo? _lastRemovedTodo;
   int? _lastRemovedIndex;
 
   DateTime _currentDate = DateTime.now();
   int _daysToLoad = 100;
 
-  Map<String, List<Todo>> _groupTodosByDay(DateTime day) {
+  Map<String, List<Todo>> _groupTodosByDay(DateTime day, List<Todo> todos) {
     Map<String, List<Todo>> groupedTodos = {};
-    for (var todo in _todos) {
+    for (var todo in todos) {
       if (DateFormat('yyyy-MM-dd').format(todo.dueDate) == DateFormat('yyyy-MM-dd').format(day)) {
         String dayKey = DateFormat('EEEE, MMM dd').format(todo.dueDate);
         if (!groupedTodos.containsKey(dayKey)) {
@@ -35,26 +35,28 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   void _editTodo(int index) async {
+    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
     final updatedTodo = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddTodoScreen(todo: _todos[index]),
+        builder: (context) => AddTodoScreen(todo: todoProvider.todos[index]),
       ),
     );
 
     if (updatedTodo != null) {
       setState(() {
-        _todos[index] = updatedTodo;
+        todoProvider.editTodo(index, updatedTodo); // Update via provider
       });
     }
   }
 
   void _removeTodoAt(int index) {
-    _lastRemovedTodo = _todos[index];
+    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
+    _lastRemovedTodo = todoProvider.todos[index];
     _lastRemovedIndex = index;
 
     setState(() {
-      _todos.removeAt(index);
+      todoProvider.removeTodoAt(index); // Remove via provider
     });
 
     final snackBar = SnackBar(
@@ -71,8 +73,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   void _undoRemoveTodo() {
     if (_lastRemovedTodo != null && _lastRemovedIndex != null) {
+      final todoProvider = Provider.of<TodoProvider>(context, listen: false);
       setState(() {
-        _todos.insert(_lastRemovedIndex!, _lastRemovedTodo!);
+        todoProvider.addTodo(_lastRemovedTodo!); // Add back via provider
         _lastRemovedTodo = null;
         _lastRemovedIndex = null;
       });
@@ -80,12 +83,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   void _toggleTodoCompletion(int index, bool? value) {
+    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
     if (value == true) {
-      _lastRemovedTodo = _todos[index];
+      _lastRemovedTodo = todoProvider.todos[index];
       _lastRemovedIndex = index;
 
       setState(() {
-        _todos.removeAt(index);
+        todoProvider.toggleTodoCompletion(index, value); // Toggle via provider
       });
 
       final snackBar = SnackBar(
@@ -103,18 +107,20 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final todoProvider = Provider.of<TodoProvider>(context);
+    final todos = todoProvider.todos; // Get todos from provider
+
     return Scaffold(
-      appBar: TodoAppBar(),  // Reuse the AppBar
+      appBar: TodoAppBar(), // Reuse the AppBar
       body: TodoListView(
-        todos: _todos,
-        groupTodosByDay: _groupTodosByDay,
+        groupTodosByDay: (day) => _groupTodosByDay(day, todos), // Group todos using the provider's todos
         toggleTodoCompletion: _toggleTodoCompletion,
         editTodo: _editTodo,
         removeTodoAt: _removeTodoAt,
         daysToLoad: _daysToLoad,
         onLoadMoreDays: () {
           setState(() {
-            _daysToLoad += 7;
+            _daysToLoad += 7; // Load more days
           });
         },
       ),
@@ -126,7 +132,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
           );
           if (newTodo != null) {
             setState(() {
-              _todos.add(newTodo);
+              todoProvider.addTodo(newTodo); // Add new todo via provider
             });
           }
         },

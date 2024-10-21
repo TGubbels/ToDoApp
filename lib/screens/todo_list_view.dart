@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'todo_item_widget.dart';
 import '../main.dart'; // Import the Todo class
+ // Import the TodoProvider
 
 class TodoListView extends StatelessWidget {
-  final List<Todo> todos;
   final Map<String, List<Todo>> Function(DateTime) groupTodosByDay;
   final int daysToLoad;
   final void Function() onLoadMoreDays;
@@ -13,7 +14,6 @@ class TodoListView extends StatelessWidget {
   final void Function(int index) removeTodoAt;
 
   TodoListView({
-    required this.todos,
     required this.groupTodosByDay,
     required this.daysToLoad,
     required this.onLoadMoreDays,
@@ -27,7 +27,7 @@ class TodoListView extends StatelessWidget {
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollInfo) {
         if (!scrollInfo.metrics.atEdge && scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-          onLoadMoreDays();  // Load more days
+          onLoadMoreDays(); // Load more days
         }
         return false;
       },
@@ -59,8 +59,8 @@ class TodoListView extends StatelessWidget {
                     ...todosForDay.map((todo) {
                       return TodoItemWidget(
                         todo: todo,
-                        onEdit: () => editTodo(todos.indexOf(todo)),
-                        onToggleComplete: (value) => toggleTodoCompletion(todos.indexOf(todo), value),
+                        onEdit: () => editTodo(todosForDay.indexOf(todo)), // Use the correct index for editing
+                        onToggleComplete: (value) => toggleTodoCompletion(todosForDay.indexOf(todo), value),
                       );
                     }).toList(),
                     Divider(height: 1),

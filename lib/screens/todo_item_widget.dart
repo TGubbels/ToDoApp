@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../main.dart'; // Import the Todo class
 
 class TodoItemWidget extends StatelessWidget {
@@ -25,7 +26,17 @@ class TodoItemWidget extends StatelessWidget {
       child: ListTile(
         leading: Checkbox(
           value: todo.isCompleted,
-          onChanged: onToggleComplete,
+          onChanged: (value) {
+            // Here we handle checking the checkbox
+            if (value == true) {
+              // If checked, we notify the provider to remove it
+              final provider = Provider.of<TodoProvider>(context, listen: false);
+              provider.removeTodoWithUndo(context, todo); // Pass the context here
+            } else {
+              // If unchecked, just call the completion callback
+              onToggleComplete(value);
+            }
+          },
           activeColor: theme.colorScheme.primary, // Use primary color for the checkbox
           checkColor: theme.colorScheme.onPrimary, // Use color for the checkmark
           side: BorderSide(
@@ -59,7 +70,7 @@ class TodoItemWidget extends StatelessWidget {
             ),
           ],
         ),
-        onTap: onEdit,
+        onTap: onEdit, // Call the passed edit method
       ),
     );
   }
