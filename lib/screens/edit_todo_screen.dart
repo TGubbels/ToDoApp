@@ -63,10 +63,17 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(labelText: 'Todo Title'),
+            Center(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.6,
+                child: TextField(
+                  textAlign: TextAlign.center,
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: 'Todo Title'),
+                ),
+              ),
             ),
             SizedBox(height: 10),
             TextButton(
@@ -79,30 +86,32 @@ class _EditTodoScreenState extends State<EditTodoScreen> {
             ),
             SizedBox(height: 10),
             // Category selection dropdown
-            DropdownButton<Category>(
-              value: _selectedCategory,
-              hint: Text('Select Category'),
-              items: categoryProvider.categories.map((category) {
-                return DropdownMenuItem<Category>(
-                  value: category,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: category.color,
-                        radius: 10,
-                      ),
-                      SizedBox(width: 10),
-                      Text(category.name),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value; // Set selected category
-                });
-              },
-            ),
+           DropdownButton<Category>(
+  value: categoryProvider.categories.contains(_selectedCategory) 
+          ? _selectedCategory 
+          : null,  // Ensure the selected category is in the list
+  hint: Text('Select Category'),
+  items: categoryProvider.categories.map((category) {
+    return DropdownMenuItem<Category>(
+      value: category,
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: category.color,
+            radius: 10,
+          ),
+          SizedBox(width: 10),
+          Text(category.name),
+        ],
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      _selectedCategory = value; // Set selected category
+    });
+  },
+),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveTodo,

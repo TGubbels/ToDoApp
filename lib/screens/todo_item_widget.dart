@@ -5,12 +5,10 @@ import '../main.dart'; // Import the Todo class
 class TodoItemWidget extends StatelessWidget {
   final Todo todo;
   final VoidCallback onEdit;
-  final ValueChanged<bool?> onToggleComplete;
 
   TodoItemWidget({
     required this.todo,
     required this.onEdit,
-    required this.onToggleComplete,
   });
 
   @override
@@ -32,10 +30,8 @@ class TodoItemWidget extends StatelessWidget {
               // If checked, we notify the provider to remove it
               final provider = Provider.of<TodoProvider>(context, listen: false);
               provider.removeTodoWithUndo(context, todo); // Pass the context here
-            } else {
-              // If unchecked, just call the completion callback
-              onToggleComplete(value);
-            }
+            } 
+            
           },
           activeColor: theme.colorScheme.primary, // Use primary color for the checkbox
           checkColor: theme.colorScheme.onPrimary, // Use color for the checkmark

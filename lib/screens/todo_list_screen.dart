@@ -6,7 +6,6 @@ import '../main.dart'; // Importing the Todo class and TodoProvider
 import 'todo_item_widget.dart';
 import 'todo_app_bar.dart';
 import 'todo_list_view.dart';
- // Ensure to import the TodoProvider
 
 class TodoListScreen extends StatefulWidget {
   @override
@@ -34,74 +33,43 @@ class _TodoListScreenState extends State<TodoListScreen> {
     return groupedTodos;
   }
 
-  void _editTodo(int index) async {
-    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
-    final updatedTodo = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddTodoScreen(todo: todoProvider.todos[index]),
-      ),
-    );
+void _editTodo(Todo todo) async {
+  final todoProvider = Provider.of<TodoProvider>(context, listen: false);
+  
+  // Show the modal bottom sheet with the existing todo
+  final updatedTodo = await showModalBottomSheet<Todo>(
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+      return AddTodoScreen(todo: todo); // Pass the existing todo directly
+    },
+  );
 
-    if (updatedTodo != null) {
-      setState(() {
-        todoProvider.editTodo(index, updatedTodo); // Update via provider
-      });
-    }
-  }
-
-  void _removeTodoAt(int index) {
-    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
-    _lastRemovedTodo = todoProvider.todos[index];
-    _lastRemovedIndex = index;
-
+  // Check if the updatedTodo is not null
+  if (updatedTodo != null) {
     setState(() {
-      todoProvider.removeTodoAt(index); // Remove via provider
+      // Find the index of the todo to update
+      int index = todoProvider.todos.indexOf(todo); // Find the index using the todo object
+      todoProvider.editTodo(index, updatedTodo); // Update the todo via the provider
     });
+  }
+}
 
-    final snackBar = SnackBar(
-      content: Text('Todo "${_lastRemovedTodo?.title}" removed'),
-      action: SnackBarAction(
-        label: 'Undo',
-        onPressed: _undoRemoveTodo,
-      ),
-      duration: Duration(seconds: 10),
+
+
+  void _showAddTodoModal(BuildContext context) async {
+    final newTodo = await showModalBottomSheet<Todo>(
+      context: context,
+      isScrollControlled: true, // Allow the sheet to be scrollable
+      builder: (BuildContext context) {
+        return AddTodoScreen(); // For adding new todo
+      },
     );
-
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void _undoRemoveTodo() {
-    if (_lastRemovedTodo != null && _lastRemovedIndex != null) {
-      final todoProvider = Provider.of<TodoProvider>(context, listen: false);
+    if (newTodo != null) {
       setState(() {
-        todoProvider.addTodo(_lastRemovedTodo!); // Add back via provider
-        _lastRemovedTodo = null;
-        _lastRemovedIndex = null;
+        final todoProvider = Provider.of<TodoProvider>(context, listen: false);
+        todoProvider.addTodo(newTodo); // Add new todo via provider
       });
-    }
-  }
-
-  void _toggleTodoCompletion(int index, bool? value) {
-    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
-    if (value == true) {
-      _lastRemovedTodo = todoProvider.todos[index];
-      _lastRemovedIndex = index;
-
-      setState(() {
-        todoProvider.toggleTodoCompletion(index, value); // Toggle via provider
-      });
-
-      final snackBar = SnackBar(
-        content: Text('Todo "${_lastRemovedTodo?.title}" completed and removed'),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: _undoRemoveTodo,
-        ),
-        duration: Duration(seconds: 10),
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -111,12 +79,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final todos = todoProvider.todos; // Get todos from provider
 
     return Scaffold(
-      appBar: TodoAppBar(), // Reuse the AppBar
       body: TodoListView(
-        groupTodosByDay: (day) => _groupTodosByDay(day, todos), // Group todos using the provider's todos
-        toggleTodoCompletion: _toggleTodoCompletion,
+        groupTodosByDay: (day) => _groupTodosByDay(day, todos), // Group todos using the provider's todos 
         editTodo: _editTodo,
-        removeTodoAt: _removeTodoAt,
         daysToLoad: _daysToLoad,
         onLoadMoreDays: () {
           setState(() {
@@ -125,17 +90,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final newTodo = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddTodoScreen()),
-          );
-          if (newTodo != null) {
-            setState(() {
-              todoProvider.addTodo(newTodo); // Add new todo via provider
-            });
-          }
-        },
+        onPressed: () => _showAddTodoModal(context), // Show the modal bottom sheet
         child: Icon(Icons.add),
       ),
     );

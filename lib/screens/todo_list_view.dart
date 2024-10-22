@@ -3,23 +3,18 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'todo_item_widget.dart';
 import '../main.dart'; // Import the Todo class
- // Import the TodoProvider
 
 class TodoListView extends StatelessWidget {
   final Map<String, List<Todo>> Function(DateTime) groupTodosByDay;
   final int daysToLoad;
   final void Function() onLoadMoreDays;
-  final void Function(int index, bool? value) toggleTodoCompletion;
-  final void Function(int index) editTodo;
-  final void Function(int index) removeTodoAt;
+  final void Function(Todo todo) editTodo; // Update to accept a Todo object
 
   TodoListView({
     required this.groupTodosByDay,
     required this.daysToLoad,
     required this.onLoadMoreDays,
-    required this.toggleTodoCompletion,
     required this.editTodo,
-    required this.removeTodoAt,
   });
 
   @override
@@ -59,8 +54,7 @@ class TodoListView extends StatelessWidget {
                     ...todosForDay.map((todo) {
                       return TodoItemWidget(
                         todo: todo,
-                        onEdit: () => editTodo(todosForDay.indexOf(todo)), // Use the correct index for editing
-                        onToggleComplete: (value) => toggleTodoCompletion(todosForDay.indexOf(todo), value),
+                        onEdit: () => editTodo(todo), // Pass the todo object instead of index
                       );
                     }).toList(),
                     Divider(height: 1),

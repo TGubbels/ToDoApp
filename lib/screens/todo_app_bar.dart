@@ -7,7 +7,7 @@ class TodoAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context); // Get current theme
     return AppBar(
       backgroundColor: theme.colorScheme.secondary,
-      title: Text('Todo List',style: TextStyle(color: theme.colorScheme.onSecondary),),
+      title: Text('Todo List',style: TextStyle(color: theme.colorScheme.onSurface),),
       actions: [
         IconButton(
           icon: Icon(Icons.category),

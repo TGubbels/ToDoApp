@@ -231,6 +231,13 @@ class MyApp extends StatelessWidget {
             color: Colors.white,
             size: 24,
           ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white, // Set the background color
+        backgroundColor: Colors.green.shade700, // Set the text color
+        shadowColor: Colors.black, // Set the shadow color
+      ),
+    ),
         ),
         home: HomeScreen(),
       ),
@@ -252,6 +259,11 @@ class _HomeScreenState extends State<HomeScreen> {
     CategoryScreen(),
   ];
 
+  final List<String> _screensBars = [
+    "ToDo list",
+    "Categories",
+  ];
+
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -262,6 +274,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.colorScheme.secondary ,
+        
+        title: Text(_screensBars[_currentIndex]),
+      ),
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: theme.colorScheme.secondary,
