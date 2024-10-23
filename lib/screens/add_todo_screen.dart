@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:namer_app/Functions.dart';
+import 'package:namer_app/screens/components/CategoryButton.dart';
 import 'package:provider/provider.dart';
 import '../main.dart'; // Import Todo and CategoryProvider
 
@@ -62,27 +64,7 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
     });
   }
 
-  // Function to determine how to display the due date
-  String _formatDueDate(DateTime date) {
-    final today = DateTime.now();
-    final tomorrow = today.add(Duration(days: 1));
 
-    // Compare only the date part (year, month, day)
-    if (date.year == today.year &&
-        date.month == today.month &&
-        date.day == today.day) {
-      return 'Today';
-    } else if (date.year == tomorrow.year &&
-        date.month == tomorrow.month &&
-        date.day == tomorrow.day) {
-      return 'Tomorrow';
-    } else if (date.isAfter(today) &&
-        date.isBefore(tomorrow.add(Duration(days: 7)))) {
-      return DateFormat('EEEE').format(date); // Day of the week
-    } else {
-      return DateFormat('dd MMM').format(date); // e.g., "30 Okt."
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +73,8 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
 
     return Padding(
       padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 10), // Adjust padding
+          bottom:
+              MediaQuery.of(context).viewInsets.bottom + 10), // Adjust padding
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,47 +105,23 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                       Expanded(
                         flex: 1, // Take 1 part
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width / 3, // Set width to 1/3 of the total width
+                          width: MediaQuery.of(context).size.width / 3,
                           child: ElevatedButton(
                             onPressed: () => _selectDueDate(context),
-                            child: Text('${_formatDueDate(_dueDate)}'), // Only show the formatted date
+                            child: Text(
+                                '${utils.formatDueDate(_dueDate)}'), // Only show the formatted date
                           ),
                         ),
                       ),
                       SizedBox(width: 8), // Space between buttons
                       Expanded(
                         flex: 2, // Take 2 parts (remaining space)
-                        child: DropdownButtonFormField<Category>(
-                          value: _selectedCategory,
-                          decoration: InputDecoration(labelText: 'Category'),
-                          items: categoryProvider.categories.map((category) {
-                            return DropdownMenuItem<Category>(
-                              value: category,
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      color: category.color, // Show category color
-                                      shape: BoxShape.circle, // Circle for color display
-                                    ),
-                                  ),
-                                  SizedBox(width: 10), // Space between circle and text
-                                  Text(category.name), // Category name
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (category) {
+                        child: CategoryButton(
+                          initialCategory: _selectedCategory,
+                          onCategorySelected: (Category category) {
                             setState(() {
                               _selectedCategory = category;
                             });
-                          },
-                          // Prevent dropdown from closing the keyboard
-                          onTap: () {
-                            FocusScope.of(context).unfocus(); // Prevent closing of the keyboard
-                            FocusScope.of(context).requestFocus(_titleFocusNode);
                           },
                         ),
                       ),
@@ -170,17 +129,19 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                   ),
                   SizedBox(height: 16),
                   Align(
-                      alignment: Alignment.bottomRight, // Align button to the right
+                      alignment: Alignment.bottomRight,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.secondary, // Set background color to secondary
-                          borderRadius: BorderRadius.circular(12), // Make the background circular
+                          color: theme.colorScheme.secondary,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: IconButton(
                           onPressed: () {
-                            if (_formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate() &&
+                                _selectedCategory != null) {
                               // If editing, update the existing Todo
-                              if (widget.todo != null) {
+                              if (widget.todo != null &&
+                                  _selectedCategory != null) {
                                 widget.todo!.title = _title;
                                 widget.todo!.dueDate = _dueDate;
                                 widget.todo!.category = _selectedCategory!;
@@ -192,15 +153,17 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                                   Todo(
                                     title: _title,
                                     dueDate: _dueDate, // Set due date
-                                    category: _selectedCategory!, // Assign selected category
+                                    category:
+                                        _selectedCategory!, // Assign selected category
                                   ),
                                 );
                               }
                             }
                           },
-                          icon: Icon(Icons.arrow_forward, size: 30, weight: 800), // Thicker arrow
-                          color: Colors.white, // Icon color
-                          padding: EdgeInsets.all(2), // Adjust padding for the icon button
+                          icon:
+                              Icon(Icons.arrow_forward, size: 30, weight: 800),
+                          color: Colors.white,
+                          padding: EdgeInsets.all(2),
                         ),
                       )),
                 ],
