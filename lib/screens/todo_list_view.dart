@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:namer_app/providers/todo_provider.dart';
 import 'package:provider/provider.dart';
 import 'todo_item_widget.dart';
 import '../main.dart'; // Import the Todo class
@@ -19,9 +20,25 @@ class TodoListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void ShowSnackbar() async {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Todo  removed'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            Provider.of<TodoProvider>(context, listen: false).undoRemoveTodo();
+          },
+        ),
+        //duration: Duration(seconds: 5),
+      ));
+      await Future.delayed(Duration(seconds: 2));
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
+
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollInfo) {
-        if (!scrollInfo.metrics.atEdge && scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+        if (!scrollInfo.metrics.atEdge &&
+            scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
           onLoadMoreDays(); // Load more days
         }
         return false;
@@ -30,13 +47,14 @@ class TodoListView extends StatelessWidget {
         itemCount: daysToLoad,
         itemBuilder: (context, index) {
           DateTime day = DateTime.now().add(Duration(days: index));
-          Map<String, List<Todo>> groupedTodos = groupTodosByDay(day);
+          Map<String, List<dynamic>> groupedTodos = groupTodosByDay(day);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
                 child: Text(
                   DateFormat('EEEE, MMM dd').format(day),
                   style: TextStyle(
@@ -47,14 +65,16 @@ class TodoListView extends StatelessWidget {
               ),
               Divider(height: 1),
               ...groupedTodos.entries.map((entry) {
-                List<Todo> todosForDay = entry.value;
+                List<dynamic> todosForDay = entry.value;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ...todosForDay.map((todo) {
                       return TodoItemWidget(
                         todo: todo,
-                        onEdit: () => editTodo(todo), // Pass the todo object instead of index
+                        remove: ShowSnackbar,
+                        onEdit: () => editTodo(
+                            todo), // Pass the todo object instead of index
                       );
                     }).toList(),
                     Divider(height: 1),

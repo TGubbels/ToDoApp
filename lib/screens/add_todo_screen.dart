@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:namer_app/Functions.dart';
+import 'package:namer_app/providers/category_provider.dart';
 import 'package:namer_app/screens/components/CategoryButton.dart';
 import 'package:provider/provider.dart';
 import '../main.dart'; // Import Todo and CategoryProvider
@@ -102,8 +103,8 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                   SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(
-                        flex: 1, // Take 1 part
+                      Container(
+                        width: MediaQuery.of(context).size.width / 3, // Take 1 part
                         child: SizedBox(
                           width: MediaQuery.of(context).size.width / 3,
                           child: ElevatedButton(
@@ -114,8 +115,8 @@ class _AddTodoScreenState extends State<AddTodoScreen> {
                         ),
                       ),
                       SizedBox(width: 8), // Space between buttons
-                      Expanded(
-                        flex: 2, // Take 2 parts (remaining space)
+                      Container(
+                        width: MediaQuery.of(context).size.width* 2 / 3 - 8, // Take 2 parts (remaining space)
                         child: CategoryButton(
                           initialCategory: _selectedCategory,
                           onCategorySelected: (Category category) {

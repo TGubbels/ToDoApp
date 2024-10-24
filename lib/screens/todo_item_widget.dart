@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:namer_app/providers/todo_provider.dart';
 import 'package:provider/provider.dart';
 import '../main.dart'; // Import the Todo class
 
 class TodoItemWidget extends StatelessWidget {
-  final Todo todo;
+  final dynamic todo;
   final VoidCallback onEdit;
+  final VoidCallback remove ;
 
   TodoItemWidget({
     required this.todo,
     required this.onEdit,
+    required this.remove,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context); // Get the current theme
+    
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
@@ -28,16 +32,20 @@ class TodoItemWidget extends StatelessWidget {
             // Here we handle checking the checkbox
             if (value == true) {
               // If checked, we notify the provider to remove it
-              final provider = Provider.of<TodoProvider>(context, listen: false);
-              provider.removeTodoWithUndo(context, todo); // Pass the context here
-            } 
-            
+              Provider.of<TodoProvider>(context, listen: false)
+                  .removeTodoWithUndo(context, todo);
+              remove();
+               
+            }
           },
-          activeColor: theme.colorScheme.primary, // Use primary color for the checkbox
-          checkColor: theme.colorScheme.onPrimary, // Use color for the checkmark
+          activeColor:
+              theme.colorScheme.primary, // Use primary color for the checkbox
+          checkColor:
+              theme.colorScheme.onPrimary, // Use color for the checkmark
           side: BorderSide(
             width: 2.0,
-            color: theme.colorScheme.onSurface, // Use onSurface color for contrast
+            color:
+                theme.colorScheme.onSurface, // Use onSurface color for contrast
           ),
         ),
         title: Text(

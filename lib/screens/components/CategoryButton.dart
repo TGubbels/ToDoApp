@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:namer_app/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart'; // Import Todo and CategoryProvider
 

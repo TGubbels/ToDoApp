@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:namer_app/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart'; // Make sure to import the color picker
 import '../main.dart';

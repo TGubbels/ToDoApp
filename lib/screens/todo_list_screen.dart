@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:namer_app/providers/todo_provider.dart';
 import 'package:provider/provider.dart';
 import 'add_todo_screen.dart';
 import '../main.dart'; // Importing the Todo class and TodoProvider
@@ -13,13 +14,9 @@ class TodoListScreen extends StatefulWidget {
 }
 
 class _TodoListScreenState extends State<TodoListScreen> {
-  Todo? _lastRemovedTodo;
-  int? _lastRemovedIndex;
-
-  DateTime _currentDate = DateTime.now();
   int _daysToLoad = 100;
 
-  Map<String, List<Todo>> _groupTodosByDay(DateTime day, List<Todo> todos) {
+  Map<String, List<Todo>> _groupTodosByDay(DateTime day, List<dynamic> todos) {
     Map<String, List<Todo>> groupedTodos = {};
     for (var todo in todos) {
       if (DateFormat('yyyy-MM-dd').format(todo.dueDate) == DateFormat('yyyy-MM-dd').format(day)) {

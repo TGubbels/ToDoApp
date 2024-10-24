@@ -1,6 +1,7 @@
 // add_category_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:namer_app/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 
